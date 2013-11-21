@@ -6,8 +6,8 @@ require 'rails_soft_deletable/version'
 Gem::Specification.new do |spec|
   spec.name          = "rails_soft_deletable"
   spec.version       = RailsSoftDeletable::VERSION
-  spec.authors       = ["Ngan Pham"]
-  spec.email         = ["ngan@listia.com"]
+  spec.authors       = ["Quan Nguyen", "Ngan Pham"]
+  spec.email         = ["quan@listia.com", "ngan@listia.com"]
   spec.description   = %q{Soft deletable for ActiveRecord on Rails 3+.}
   spec.summary       = %q{Soft deletable for ActiveRecord on Rails 3+}
   spec.homepage      = "https://github.com/listia/rails_soft_deletable"
