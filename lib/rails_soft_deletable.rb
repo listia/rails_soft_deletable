@@ -48,7 +48,11 @@ module RailsSoftDeletable
   end
 
   def destroy
-    run_callbacks(:destroy) { delete_or_soft_delete(true) }
+    if destroyed?
+      delete_or_soft_delete(true)
+    else
+      run_callbacks(:destroy) { delete_or_soft_delete(true) }
+    end
   end
 
   def delete
@@ -73,14 +77,19 @@ module RailsSoftDeletable
   alias :restore :restore!
 
   def destroyed?
-    send(soft_deletable_column) && send(soft_deletable_column) > 0
+    value = send(soft_deletable_column)
+    value && value != 0
   end
   alias :deleted? :destroyed?
 
   private
 
   def delete_or_soft_delete(with_transaction = false)
-    destroyed? ? destroy! : touch_soft_deletable_column(with_transaction)
+    if destroyed?
+      self.class.unscoped { hard_delete! }
+    else
+      touch_soft_deletable_column(with_transaction)
+    end
   end
 
   def touch_soft_deletable_column(with_transaction=false)
@@ -109,8 +118,8 @@ end
 
 class ActiveRecord::Base
   def self.acts_as_soft_deletable(options={})
-    alias :destroy! :destroy
-    alias :delete! :delete
+    alias :hard_destroy! :destroy
+    alias :hard_delete! :delete
     include RailsSoftDeletable
     class_attribute :soft_deletable_column
 
@@ -124,6 +133,13 @@ class ActiveRecord::Base
 
   def soft_deletable?
     self.class.soft_deletable?
+  end
+
+  # Override the persisted method to allow for the paranoia gem.
+  # If a paranoid record is selected, then we only want to check
+  # if it's a new record, not if it is "destroyed".
+  def persisted?
+    soft_deletable? ? !new_record? : super
   end
 
   private
