@@ -1,4 +1,5 @@
 require "rails_soft_deletable/version"
+require "active_record"
 
 module RailsSoftDeletable
   def self.included(base)
@@ -45,6 +46,11 @@ module RailsSoftDeletable
         set_callback(:restore, :after, *args, &block)
       end
     end
+  end
+
+  def deleted_at
+    val = super
+    val.zero? ? val : Time.at(val).in_time_zone
   end
 
   def destroy
@@ -103,7 +109,7 @@ module RailsSoftDeletable
   def touch_column
     raise ActiveRecordError, "can not touch on a new record object" unless persisted?
 
-    current_time = current_time_from_proper_timezone.to_i
+    current_time = current_time_from_proper_timezone.to_f
     changes = {}
 
     changes[soft_deletable_column.to_s] = write_attribute(soft_deletable_column.to_s, current_time)
