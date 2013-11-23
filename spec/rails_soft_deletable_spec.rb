@@ -185,5 +185,57 @@ describe RailsSoftDeletable do
   end
 
   context "#restore!" do
+    before do
+      model.destroy
+      model.reset_callback_flags!
+    end
+
+    it "restores the record" do
+      model.restore!
+
+      expect(model).to be_persisted
+      expect(model.deleted_at).to be_nil
+      expect(model).to_not be_deleted_at_changed
+      expect(model).to_not be_destroyed
+      expect(model).to_not be_new_record
+      expect(model).to_not be_frozen
+    end
+
+    it "resets deleted_at in the database" do
+      model.restore!
+
+      model_deleted_at = model.class.connection.select_value("SELECT deleted_at FROM #{model.class.quoted_table_name} WHERE #{model.class.primary_key} = #{model.id}")
+      expect(model_deleted_at).to eq(0)
+    end
+
+    it "performs restore callbacks" do
+      model.restore!
+
+      expect(model.before_restore_called).to eq(true)
+      expect(model.around_restore_called).to eq(true)
+      expect(model.after_restore_called).to eq(true)
+    end
+
+    it "returns true" do
+      expect(model.restore!).to eq(true)
+    end
+  end
+
+  context "#deleted_at" do
+    context "when record has not been soft deleted" do
+      it "returns nil" do
+        expect(model.deleted_at).to be_nil
+      end
+    end
+
+    context "when record has been soft deleted" do
+      before do
+        model.destroy
+      end
+
+      it "returns a Time object" do
+        expect(model.deleted_at).to be_kind_of(Time)
+      end
+    end
   end
 end

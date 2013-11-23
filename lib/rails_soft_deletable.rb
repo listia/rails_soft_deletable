@@ -50,7 +50,11 @@ module RailsSoftDeletable
 
   def deleted_at
     val = super
-    val.zero? ? val : Time.at(val).in_time_zone
+    if val.zero? || val.nil?
+      nil
+    else
+      Time.at(val).in_time_zone
+    end
   end
 
   def destroy

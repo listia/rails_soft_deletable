@@ -17,9 +17,9 @@ module Spec
           around_destroy :call_around_destroy
           after_destroy  :call_after_destroy
 
-          before_destroy :call_before_restore
-          around_destroy :call_around_restore
-          after_destroy  :call_after_restore
+          before_restore :call_before_restore
+          around_restore :call_around_restore
+          after_restore  :call_after_restore
 
           def call_before_destroy
             @before_destroy_called = true

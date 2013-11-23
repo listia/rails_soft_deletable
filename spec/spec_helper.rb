@@ -2,7 +2,6 @@ require "pathname"
 ROOT_PATH = Pathname.new(__FILE__).join("../..").expand_path
 $LOAD_PATH.unshift(ROOT_PATH.join("lib").to_s)
 
-require "bundler"
 require "rails_soft_deletable"
 
 # Requires supporting ruby files with custom matchers and macros, etc,
