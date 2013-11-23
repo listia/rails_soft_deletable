@@ -51,6 +51,7 @@ describe RailsSoftDeletable do
       model.destroy
 
       expect(model.before_destroy_called).to eq(true)
+      expect(model.around_destroy_called).to eq(true)
       expect(model.after_destroy_called).to eq(true)
     end
 
@@ -64,6 +65,7 @@ describe RailsSoftDeletable do
         model.destroy
 
         expect(model.before_destroy_called).to be_nil
+        expect(model.around_destroy_called).to be_nil
         expect(model.after_destroy_called).to be_nil
       end
 
@@ -85,7 +87,7 @@ describe RailsSoftDeletable do
         decimal_deleted_at = DecimalModel.connection.select_value("SELECT deleted_at FROM #{DecimalModel.quoted_table_name} WHERE #{DecimalModel.primary_key} = #{decimal_model.id}")
         integer_deleted_at = IntegerModel.connection.select_value("SELECT deleted_at FROM #{IntegerModel.quoted_table_name} WHERE #{IntegerModel.primary_key} = #{integer_model.id}")
 
-        expect(decimal_deleted_at).to eq(Time.now.to_f)
+        expect(decimal_deleted_at).to eq(("%0.6f" % Time.now.to_f).to_f)
         expect(integer_deleted_at.to_i).to eq(Time.now.to_i)
       end
     end
@@ -122,6 +124,7 @@ describe RailsSoftDeletable do
       model.delete
 
       expect(model.before_destroy_called).to be_nil
+      expect(model.around_destroy_called).to be_nil
       expect(model.after_destroy_called).to be_nil
     end
 
@@ -134,6 +137,7 @@ describe RailsSoftDeletable do
         model.delete
 
         expect(model.before_destroy_called).to be_nil
+        expect(model.around_destroy_called).to be_nil
         expect(model.after_destroy_called).to be_nil
       end
 
@@ -158,6 +162,7 @@ describe RailsSoftDeletable do
       model.hard_destroy!
 
       expect(model.before_destroy_called).to eq(true)
+      expect(model.around_destroy_called).to eq(true)
       expect(model.after_destroy_called).to eq(true)
     end
   end
@@ -174,6 +179,7 @@ describe RailsSoftDeletable do
       model.hard_delete!
 
       expect(model.before_destroy_called).to be_nil
+      expect(model.around_destroy_called).to be_nil
       expect(model.after_destroy_called).to be_nil
     end
   end
