@@ -63,13 +63,13 @@ module Spec
 end
 
 class DecimalModel< ActiveRecord::Base
-  acts_as_soft_deletable
+  soft_deletable
 
   include Spec::Models::SoftDeletableCallbacks
 end
 
 class IntegerModel < ActiveRecord::Base
-  acts_as_soft_deletable
+  soft_deletable
 
   include Spec::Models::SoftDeletableCallbacks
 end

@@ -1,24 +1,24 @@
 # RailsSoftDeletable
 
-TODO: Write a gem description
+This gem provides soft delete behavior to ActiveRecord 3.2.
 
 ## Installation
 
 Add this line to your application's Gemfile:
 
-    gem 'rails_soft_deletable'
+    gem "rails_soft_deletable"
 
 And then execute:
 
     $ bundle
 
-Or install it yourself as:
-
-    $ gem install rails_soft_deletable
-
 ## Usage
 
-TODO: Write usage instructions here
+```ruby
+class Company < ActiveRecord::Base
+  soft_deletable
+end
+```
 
 ## Contributing
 

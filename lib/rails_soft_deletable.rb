@@ -57,17 +57,25 @@ module RailsSoftDeletable
     end
   end
 
-  def destroy
-    if destroyed?
-      delete_or_soft_delete(true)
+  def destroy(destroy_mode = :soft)
+    if destroy_mode == :hard
+      _original_destroy
     else
-      run_callbacks(:destroy) { delete_or_soft_delete(true) }
+      if destroyed?
+        delete_or_soft_delete(true)
+      else
+        run_callbacks(:destroy) { delete_or_soft_delete(true) }
+      end
     end
   end
 
-  def delete
-    return if new_record?
-    delete_or_soft_delete
+  def delete(delete_mode = :soft)
+    if delete_mode == :hard
+      _original_delete
+    else
+      return if new_record?
+      delete_or_soft_delete
+    end
   end
 
   def restore!
@@ -87,16 +95,25 @@ module RailsSoftDeletable
   alias :restore :restore!
 
   def destroyed?
-    value = send(soft_deletable_column)
-    value && value != 0
+    !!send(soft_deletable_column)
   end
-  alias :deleted? :destroyed?
+
+  def persisted?
+    @_pretend_persistence || super
+  end
 
   private
 
+  def _prepare_for_hard_delete(&block)
+    @_pretend_persistence = true
+    self.class.unscoped(&block)
+  ensure
+    @_pretend_persistence = false
+  end
+
   def delete_or_soft_delete(with_transaction = false)
     if destroyed?
-      self.class.unscoped { hard_delete! }
+      _prepare_for_hard_delete { _original_delete }
     else
       touch_soft_deletable_column(with_transaction)
     end
@@ -127,9 +144,13 @@ module RailsSoftDeletable
 end
 
 class ActiveRecord::Base
-  def self.acts_as_soft_deletable(options={})
-    alias :hard_destroy! :destroy
-    alias :hard_delete! :delete
+  def self.soft_deletable(options={})
+    alias :_original_destroy :destroy
+    alias :_original_delete  :delete
+
+    private :_original_destroy
+    private :_original_delete
+
     include RailsSoftDeletable
     class_attribute :soft_deletable_column
 
@@ -143,13 +164,6 @@ class ActiveRecord::Base
 
   def soft_deletable?
     self.class.soft_deletable?
-  end
-
-  # Override the persisted method to allow for the paranoia gem.
-  # If a paranoid record is selected, then we only want to check
-  # if it's a new record, not if it is "destroyed".
-  def persisted?
-    soft_deletable? ? !new_record? : super
   end
 
   private

@@ -41,6 +41,12 @@ describe RailsSoftDeletable do
       expect(model).to be_destroyed
     end
 
+    it "marks the record as not persisted" do
+      model.destroy
+
+      expect(model).to_not be_persisted
+    end
+
     it "does not freeze the record" do
       model.destroy
 
@@ -74,6 +80,23 @@ describe RailsSoftDeletable do
 
         count = model.class.connection.select_value("SELECT COUNT(*) FROM #{model.class.quoted_table_name} WHERE #{model.class.primary_key} = #{model.id}")
         expect(count).to eq(0)
+      end
+    end
+
+    context "with hard destroy mode" do
+      it "hard deletes the record from the database" do
+        model.destroy(:hard)
+
+        count = model.class.connection.select_value("SELECT COUNT(*) FROM #{model.class.quoted_table_name} WHERE #{model.class.primary_key} = #{model.id}")
+        expect(count).to eq(0)
+      end
+
+      it "performs destroy callbacks" do
+        model.destroy(:hard)
+
+        expect(model.before_destroy_called).to eq(true)
+        expect(model.around_destroy_called).to eq(true)
+        expect(model.after_destroy_called).to eq(true)
       end
     end
   end
@@ -114,6 +137,12 @@ describe RailsSoftDeletable do
       expect(model).to be_destroyed
     end
 
+    it "marks the record as not persisted" do
+      model.delete
+
+      expect(model).to_not be_persisted
+    end
+
     it "does not freeze the record" do
       model.delete
 
@@ -148,39 +177,22 @@ describe RailsSoftDeletable do
         expect(count).to eq(0)
       end
     end
-  end
 
-  context "#hard_destroy!" do
-    it "hard deletes the record from the database" do
-      model.hard_destroy!
+    context "with hard delete mode" do
+      it "hard deletes the record from the database" do
+        model.delete(:hard)
 
-      count = model.class.connection.select_value("SELECT COUNT(*) FROM #{model.class.quoted_table_name} WHERE #{model.class.primary_key} = #{model.id}")
-      expect(count).to eq(0)
-    end
+        count = model.class.connection.select_value("SELECT COUNT(*) FROM #{model.class.quoted_table_name} WHERE #{model.class.primary_key} = #{model.id}")
+        expect(count).to eq(0)
+      end
 
-    it "performs destroy callbacks" do
-      model.hard_destroy!
+      it "performs destroy callbacks" do
+        model.delete(:hard)
 
-      expect(model.before_destroy_called).to eq(true)
-      expect(model.around_destroy_called).to eq(true)
-      expect(model.after_destroy_called).to eq(true)
-    end
-  end
-
-  context "#hard_delete!" do
-    it "hard deletes the record from the database" do
-      model.hard_delete!
-
-      count = model.class.connection.select_value("SELECT COUNT(*) FROM #{model.class.quoted_table_name} WHERE #{model.class.primary_key} = #{model.id}")
-      expect(count).to eq(0)
-    end
-
-    it "performs destroy callbacks" do
-      model.hard_delete!
-
-      expect(model.before_destroy_called).to be_nil
-      expect(model.around_destroy_called).to be_nil
-      expect(model.after_destroy_called).to be_nil
+        expect(model.before_destroy_called).to be_nil
+        expect(model.around_destroy_called).to be_nil
+        expect(model.after_destroy_called).to be_nil
+      end
     end
   end
 
