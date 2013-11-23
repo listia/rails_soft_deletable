@@ -50,8 +50,8 @@ describe RailsSoftDeletable do
     it "performs destroy callbacks" do
       model.destroy
 
-      expect(model.before_destroy_called).to be_true
-      expect(model.after_destroy_called).to be_true
+      expect(model.before_destroy_called).to eq(true)
+      expect(model.after_destroy_called).to eq(true)
     end
 
     context "when record has already been soft deleted" do
