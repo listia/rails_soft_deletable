@@ -57,6 +57,7 @@ describe RailsSoftDeletable do
     context "when record has already been soft deleted" do
       before do
         model.destroy
+        model.reset_callback_flags!
       end
 
       it "does not perform destroy callbacks" do

@@ -10,6 +10,11 @@ module Spec
 
           before_destroy { @before_destroy_called = true }
           after_destroy  { @after_destroy_called = true }
+
+          def reset_callback_flags!
+            @before_destroy_called = nil
+            @after_destroy_called  = nil
+          end
         end
       end
     end
