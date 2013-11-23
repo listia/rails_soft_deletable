@@ -48,12 +48,12 @@ module RailsSoftDeletable
     end
   end
 
-  def deleted_at
-    val = super
-    if val.zero? || val.nil?
+  def soft_delete_time
+    value = send(soft_deletable_column)
+    if value.zero? || value.nil?
       nil
     else
-      Time.at(val).in_time_zone
+      Time.at(value).in_time_zone
     end
   end
 
@@ -95,7 +95,8 @@ module RailsSoftDeletable
   alias :restore :restore!
 
   def destroyed?
-    !!send(soft_deletable_column)
+    value = send(soft_deletable_column)
+    !value || value != 0
   end
 
   def persisted?

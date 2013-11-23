@@ -11,11 +11,11 @@ describe RailsSoftDeletable do
         decimal_model.destroy
         integer_model.destroy
 
-        decimal_deleted_at = DecimalModel.connection.select_value("SELECT deleted_at FROM #{DecimalModel.quoted_table_name} WHERE #{DecimalModel.primary_key} = #{decimal_model.id}")
-        integer_deleted_at = IntegerModel.connection.select_value("SELECT deleted_at FROM #{IntegerModel.quoted_table_name} WHERE #{IntegerModel.primary_key} = #{integer_model.id}")
+        raw_decimal_deleted_at = DecimalModel.connection.select_value("SELECT deleted_at FROM #{DecimalModel.quoted_table_name} WHERE #{DecimalModel.primary_key} = #{decimal_model.id}")
+        raw_integer_deleted_at = IntegerModel.connection.select_value("SELECT deleted_at FROM #{IntegerModel.quoted_table_name} WHERE #{IntegerModel.primary_key} = #{integer_model.id}")
 
-        expect(decimal_deleted_at).to eq(("%0.6f" % Time.now.to_f).to_f)
-        expect(integer_deleted_at.to_i).to eq(Time.now.to_i)
+        expect(raw_decimal_deleted_at).to eq(("%0.6f" % Time.now.to_f).to_f)
+        expect(raw_integer_deleted_at.to_i).to eq(Time.now.to_i)
       end
     end
 
@@ -24,8 +24,11 @@ describe RailsSoftDeletable do
         decimal_model.destroy
         integer_model.destroy
 
-        expect(decimal_model.deleted_at).to eq(Time.now)
-        expect(integer_model.deleted_at.to_i).to eq(Time.now.to_i)
+        expect(decimal_model.deleted_at).to eq(("%0.6f" % Time.now.to_f).to_f)
+        expect(integer_model.deleted_at).to eq(Time.now.to_i)
+
+        expect(decimal_model.soft_delete_time).to eq(Time.now)
+        expect(integer_model.soft_delete_time.to_i).to eq(Time.now.to_i)
       end
     end
 
@@ -107,11 +110,11 @@ describe RailsSoftDeletable do
         decimal_model.delete
         integer_model.delete
 
-        decimal_deleted_at = DecimalModel.connection.select_value("SELECT deleted_at FROM #{DecimalModel.quoted_table_name} WHERE #{DecimalModel.primary_key} = #{decimal_model.id}")
-        integer_deleted_at = IntegerModel.connection.select_value("SELECT deleted_at FROM #{IntegerModel.quoted_table_name} WHERE #{IntegerModel.primary_key} = #{integer_model.id}")
+        raw_decimal_deleted_at = DecimalModel.connection.select_value("SELECT deleted_at FROM #{DecimalModel.quoted_table_name} WHERE #{DecimalModel.primary_key} = #{decimal_model.id}")
+        raw_integer_deleted_at = IntegerModel.connection.select_value("SELECT deleted_at FROM #{IntegerModel.quoted_table_name} WHERE #{IntegerModel.primary_key} = #{integer_model.id}")
 
-        expect(decimal_deleted_at).to eq(("%0.6f" % Time.now.to_f).to_f)
-        expect(integer_deleted_at.to_i).to eq(Time.now.to_i)
+        expect(raw_decimal_deleted_at).to eq(("%0.6f" % Time.now.to_f).to_f)
+        expect(raw_integer_deleted_at.to_i).to eq(Time.now.to_i)
       end
     end
 
@@ -120,8 +123,11 @@ describe RailsSoftDeletable do
         decimal_model.delete
         integer_model.delete
 
-        expect(decimal_model.deleted_at).to eq(Time.now)
+        expect(decimal_model.deleted_at).to eq(("%0.6f" % Time.now.to_f).to_f)
         expect(integer_model.deleted_at.to_i).to eq(Time.now.to_i)
+
+        expect(decimal_model.soft_delete_time).to eq(Time.now)
+        expect(integer_model.soft_delete_time.to_i).to eq(Time.now.to_i)
       end
     end
 
@@ -206,7 +212,7 @@ describe RailsSoftDeletable do
       model.restore!
 
       expect(model).to be_persisted
-      expect(model.deleted_at).to be_nil
+      expect(model.soft_delete_time).to be_nil
       expect(model).to_not be_deleted_at_changed
       expect(model).to_not be_destroyed
       expect(model).to_not be_new_record
@@ -233,10 +239,10 @@ describe RailsSoftDeletable do
     end
   end
 
-  context "#deleted_at" do
+  context "#soft_delete_time" do
     context "when record has not been soft deleted" do
       it "returns nil" do
-        expect(model.deleted_at).to be_nil
+        expect(model.soft_delete_time).to be_nil
       end
     end
 
@@ -246,7 +252,7 @@ describe RailsSoftDeletable do
       end
 
       it "returns a Time object" do
-        expect(model.deleted_at).to be_kind_of(Time)
+        expect(model.soft_delete_time).to be_kind_of(Time)
       end
     end
   end
