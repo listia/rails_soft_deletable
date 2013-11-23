@@ -109,7 +109,7 @@ module RailsSoftDeletable
   def touch_column
     raise ActiveRecordError, "can not touch on a new record object" unless persisted?
 
-    current_time = current_time_from_proper_timezone.to_f
+    current_time = ("%0.6f" % current_time_from_proper_timezone).to_f
     changes = {}
 
     changes[soft_deletable_column.to_s] = write_attribute(soft_deletable_column.to_s, current_time)
