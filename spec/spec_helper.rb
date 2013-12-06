@@ -2,14 +2,15 @@ require "pathname"
 ROOT_PATH = Pathname.new(__FILE__).join("../..").expand_path
 $LOAD_PATH.unshift(ROOT_PATH.join("lib").to_s)
 
-require "rails_soft_deletable"
+# Configure Rails Environment
+ENV["RAILS_ENV"] = "test"
+require File.expand_path("../dummy/config/environment.rb",  __FILE__)
+
+Rails.backtrace_cleaner.remove_silencers!
 
 # Requires supporting ruby files with custom matchers and macros, etc,
 # in spec/support/ and its subdirectories.
 Dir[ROOT_PATH.join("spec/support/**/*.rb")].each { |f| require f }
-
-# Require all models.
-require "models"
 
 RSpec.configure do |config|
   # Run specs in random order to surface order dependencies. If you find an
