@@ -5,6 +5,23 @@ describe RailsSoftDeletable do
   let (:decimal_model) { DecimalModel.create! }
   let (:integer_model) { IntegerModel.create! }
 
+  context ".with_deleted" do
+    it "returns both non deleted and soft deleted object" do
+      model.destroy
+
+      expect(IntegerModel.with_deleted).to include(model, integer_model)
+    end
+  end
+
+  context ".only_deleted" do
+    it "returns only deleted object" do
+      model.destroy
+
+      expect(IntegerModel.only_deleted).to include(model)
+      expect(IntegerModel.only_deleted).not_to include(integer_model)
+    end
+  end
+
   context "#destroy" do
     it "marks deleted_at column" do
       Timecop.freeze(Time.now) do
