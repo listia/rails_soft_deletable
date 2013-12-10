@@ -9,7 +9,7 @@ module RailsSoftDeletable
         return if options[:polymorphic] && klass.nil?
 
         if options[:with_deleted] && klass.soft_deletable?
-          klass.unscoped
+          klass.with_deleted
         else
           klass.scoped
         end
