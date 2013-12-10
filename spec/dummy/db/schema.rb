@@ -29,26 +29,10 @@ ActiveRecord::Schema.define(version: Time.now.strftime("%Y%m%d%H%M%S")) do
     t.integer "deleted_at", default: 0
     t.integer "forest_id"
     t.integer "park_id"
-    t.integer "house_id"
     t.boolean "biggest", default: false
   end
 
   create_table "parks", force: true do |t|
-    t.integer "deleted_at", default: 0
-  end
-
-  create_table "houses", force: true do |t|
-    t.integer "owner_id"
-    t.integer "park_id"
-  end
-
-  create_table "owners", force: true do |t|
-    t.integer "deleted_at", default: 0
-  end
-
-  create_table "windows", force: true do |t|
-    t.integer "deleted_at", default: 0
-    t.integer "house_id"
-    t.boolean "biggest", default: false
+    t.integer "forest_id"
   end
 end

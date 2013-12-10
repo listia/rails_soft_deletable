@@ -7,7 +7,10 @@ module RailsSoftDeletable
     initializer "rails_soft_deletable.initialize" do |app|
       ActiveSupport.on_load(:active_record) do
         include(RailsSoftDeletable::ActiveRecord)
-        include(RailsSoftDeletable::Associations)
+        ::ActiveRecord::Associations::Association.send(:include, RailsSoftDeletable::Associations)
+        ::ActiveRecord::Associations::Builder::BelongsTo.valid_options += [:with_deleted]
+        ::ActiveRecord::Associations::Builder::HasMany.valid_options += [:with_deleted]
+        ::ActiveRecord::Associations::Builder::HasOne.valid_options += [:with_deleted]
       end
     end
   end

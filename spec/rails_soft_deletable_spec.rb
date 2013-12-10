@@ -6,7 +6,6 @@ describe RailsSoftDeletable do
   let (:integer_model) { IntegerModel.create! }
   let (:forest) { Forest.create! }
   let (:park) { Park.create! }
-  let (:house) { House.create! }
 
   context ".with_deleted" do
     it "returns both non deleted and soft deleted object" do
@@ -30,6 +29,7 @@ describe RailsSoftDeletable do
       context ".belongs_to" do
         context "with deleted option" do
           before do
+            Tree.belongs_to(:forest, with_deleted: true)
             forest.destroy
             @tree = Tree.create!(forest_id: forest.id)
           end
@@ -41,12 +41,13 @@ describe RailsSoftDeletable do
 
         context "without deleted option" do
           before do
-            park.destroy
-            @tree = Tree.create!(park_id: park.id)
+            Tree.belongs_to(:forest)
+            forest.destroy
+            @tree = Tree.create!(forest_id: forest.id)
           end
 
           it "does not return deleted associated objects" do
-            expect(@tree.park).to be_nil
+            expect(@tree.forest).to be_nil
           end
         end
       end
@@ -54,6 +55,7 @@ describe RailsSoftDeletable do
       context ".has_many" do
         context "with deleted option" do
           before do
+            Forest.has_many(:trees, with_deleted: true)
             @tree_destroyed = Tree.create!(forest_id: forest.id)
             @tree_destroyed.destroy
             @tree = Tree.create!(forest_id: forest.id)
@@ -66,12 +68,12 @@ describe RailsSoftDeletable do
 
         context "without deleted option" do
           before do
-            @tree_destroyed = Tree.create!(park_id: park.id)
-            @tree_destroyed.destroy
+            Forest.has_many(:trees)
+            Tree.create!(forest_id: forest.id).destroy
           end
 
           it "returns empty" do
-            expect(park.trees).to be_empty
+            expect(forest.trees).to be_empty
           end
         end
       end
@@ -79,6 +81,7 @@ describe RailsSoftDeletable do
       context ".has_one" do
         context "with deleted option" do
           before do
+            Forest.has_one(:tree, conditions: ["biggest = ?", true], with_deleted: true)
             @tree = Tree.create!(forest_id: forest.id, biggest: true)
             @tree.destroy
           end
@@ -90,12 +93,12 @@ describe RailsSoftDeletable do
 
         context "without deleted option" do
           before do
-            @tree_destroyed = Tree.create!(park_id: park.id, biggest: true)
-            @tree_destroyed.destroy
+            Forest.has_one(:tree, conditions: ["biggest = ?", true])
+            Tree.create!(forest_id: forest.id, biggest: true).destroy
           end
 
           it "returns nil" do
-            expect(park.tree).to be_nil
+            expect(forest.tree).to be_nil
           end
         end
       end
@@ -105,26 +108,27 @@ describe RailsSoftDeletable do
       context ".belongs_to" do
         context "with deleted option" do
           before do
-            @owner = Owner.create!
-            @owner.destroy
-            house.owner = @owner
-            house.save
+            Park.belongs_to(:forest, with_deleted: true)
+            forest.destroy
+            park.forest = forest
+            park.save
           end
 
           it "returns associated objects" do
-            expect(house.owner).to eq(@owner)
+            expect(park.reload.forest).to eq(forest)
           end
         end
 
         context "without deleted option" do
           before do
-            park.destroy
-            house.park = park
-            house.save
+            Park.belongs_to(:forest)
+            forest.destroy
+            park.forest = forest
+            park.save
           end
 
-          it "returns nil" do
-            expect(house.reload.park).to be_nil
+          it "does not return deleted associated objects" do
+            expect(park.reload.forest).to be_nil
           end
         end
       end
@@ -132,24 +136,25 @@ describe RailsSoftDeletable do
       context ".has_many" do
         context "with deleted option" do
           before do
-            @tree_destroyed = Tree.create!(house_id: house.id)
+            Park.has_many(:trees, with_deleted: true)
+            @tree_destroyed = Tree.create!(park_id: park.id)
             @tree_destroyed.destroy
-            @tree = Tree.create!(house_id: house.id)
+            @tree = Tree.create!(park_id: park.id)
           end
 
-          it "returns associated objects" do
-            expect(house.trees).to include(@tree_destroyed, @tree)
+          it "returns all associated objects" do
+            expect(park.trees).to include(@tree_destroyed, @tree)
           end
         end
 
         context "without deleted option" do
           before do
-            @window_destroyed = Window.create!(house_id: house.id)
-            @window_destroyed.destroy
+            Park.has_many(:trees)
+            Tree.create!(park_id: park.id).destroy
           end
 
           it "returns empty" do
-            expect(house.windows).to be_empty
+            expect(park.trees).to be_empty
           end
         end
       end
@@ -157,23 +162,24 @@ describe RailsSoftDeletable do
       context ".has_one" do
         context "with deleted option" do
           before do
-            @tree = Tree.create!(house_id: house.id, biggest: true)
+            Park.has_one(:tree, conditions: ["biggest = ?", true], with_deleted: true)
+            @tree = Tree.create!(park_id: park.id, biggest: true)
             @tree.destroy
           end
 
           it "returns deleted object" do
-            expect(house.tree).to eq(@tree)
+            expect(park.tree).to eq(@tree)
           end
         end
 
         context "without deleted option" do
           before do
-            @window = Window.create!(house_id: house.id, biggest: true)
-            @window.destroy
+            Park.has_one(:tree, conditions: ["biggest = ?", true])
+            Tree.create!(park_id: park.id, biggest: true).destroy
           end
 
-          it "returns associated objects" do
-            expect(house.windows).to be_empty
+          it "returns nil" do
+            expect(park.tree).to be_nil
           end
         end
       end
