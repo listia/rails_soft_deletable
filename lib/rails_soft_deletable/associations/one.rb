@@ -16,7 +16,7 @@ module RailsSoftDeletable
           RUBY
         end
 
-        result
+        reflection
       end
     end
   end

@@ -2,14 +2,14 @@ module RailsSoftDeletable
   class Association
     attr_reader :record
     attr_reader :target
-    attr_reader :result
+    attr_reader :reflection
 
-    def initialize(record, target, result)
+    def initialize(record, target, reflection)
       @record = record
       @target = target
-      @result = result
+      @reflection = reflection
 
-      result.options[:with_deleted] = true
+      reflection.options[:with_deleted] = true
     end
 
     def build
