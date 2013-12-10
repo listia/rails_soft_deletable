@@ -1,11 +1,11 @@
 module RailsSoftDeletable
   class Association
-    attr_reader :model
+    attr_reader :record
     attr_reader :target
     attr_reader :result
 
-    def initialize(model, target, result)
-      @model = model
+    def initialize(record, target, result)
+      @record = record
       @target = target
       @result = result
 

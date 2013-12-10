@@ -1,6 +1,6 @@
 require "rails/railtie"
 require "rails_soft_deletable/rails/active_record"
-require "rails_soft_deletable/associations"
+require "rails_soft_deletable/rails/associations"
 
 module RailsSoftDeletable
   class Railtie < Rails::Railtie
