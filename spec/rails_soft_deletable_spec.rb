@@ -4,6 +4,9 @@ describe RailsSoftDeletable do
   let (:model) { IntegerModel.create! }
   let (:decimal_model) { DecimalModel.create! }
   let (:integer_model) { IntegerModel.create! }
+  let (:forest) { Forest.create! }
+  let (:park) { Park.create! }
+  let (:house) { House.create! }
 
   context ".with_deleted" do
     it "returns both non deleted and soft deleted object" do
@@ -22,6 +25,161 @@ describe RailsSoftDeletable do
     end
   end
 
+  context "with associations" do
+    context "model with soft_deletable" do
+      context ".belongs_to" do
+        context "with deleted option" do
+          before do
+            forest.destroy
+            @tree = Tree.create!(forest_id: forest.id)
+          end
+
+          it "returns associated objects" do
+            expect(@tree.forest).to eq(forest)
+          end
+        end
+
+        context "without deleted option" do
+          before do
+            park.destroy
+            @tree = Tree.create!(park_id: park.id)
+          end
+
+          it "does not return deleted associated objects" do
+            expect(@tree.park).to be_nil
+          end
+        end
+      end
+
+      context ".has_many" do
+        context "with deleted option" do
+          before do
+            @tree_destroyed = Tree.create!(forest_id: forest.id)
+            @tree_destroyed.destroy
+            @tree = Tree.create!(forest_id: forest.id)
+          end
+
+          it "returns all associated objects" do
+            expect(forest.trees).to include(@tree_destroyed, @tree)
+          end
+        end
+
+        context "without deleted option" do
+          before do
+            @tree_destroyed = Tree.create!(park_id: park.id)
+            @tree_destroyed.destroy
+          end
+
+          it "returns empty" do
+            expect(park.trees).to be_empty
+          end
+        end
+      end
+
+      context ".has_one" do
+        context "with deleted option" do
+          before do
+            @tree = Tree.create!(forest_id: forest.id, biggest: true)
+            @tree.destroy
+          end
+
+          it "returns deleted object" do
+            expect(forest.tree).to eq(@tree)
+          end
+        end
+
+        context "without deleted option" do
+          before do
+            @tree_destroyed = Tree.create!(park_id: park.id, biggest: true)
+            @tree_destroyed.destroy
+          end
+
+          it "returns nil" do
+            expect(park.tree).to be_nil
+          end
+        end
+      end
+    end
+
+    context "model without soft_deletable" do
+      context ".belongs_to" do
+        context "with deleted option" do
+          before do
+            @owner = Owner.create!
+            @owner.destroy
+            house.owner = @owner
+            house.save
+          end
+
+          it "returns associated objects" do
+            expect(house.owner).to eq(@owner)
+          end
+        end
+
+        context "without deleted option" do
+          before do
+            park.destroy
+            house.park = park
+            house.save
+          end
+
+          it "returns nil" do
+            expect(house.reload.park).to be_nil
+          end
+        end
+      end
+
+      context ".has_many" do
+        context "with deleted option" do
+          before do
+            @tree_destroyed = Tree.create!(house_id: house.id)
+            @tree_destroyed.destroy
+            @tree = Tree.create!(house_id: house.id)
+          end
+
+          it "returns associated objects" do
+            expect(house.trees).to include(@tree_destroyed, @tree)
+          end
+        end
+
+        context "without deleted option" do
+          before do
+            @window_destroyed = Window.create!(house_id: house.id)
+            @window_destroyed.destroy
+          end
+
+          it "returns empty" do
+            expect(house.windows).to be_empty
+          end
+        end
+      end
+
+      context ".has_one" do
+        context "with deleted option" do
+          before do
+            @tree = Tree.create!(house_id: house.id, biggest: true)
+            @tree.destroy
+          end
+
+          it "returns deleted object" do
+            expect(house.tree).to eq(@tree)
+          end
+        end
+
+        context "without deleted option" do
+          before do
+            @window = Window.create!(house_id: house.id, biggest: true)
+            @window.destroy
+          end
+
+          it "returns associated objects" do
+            expect(house.windows).to be_empty
+          end
+        end
+      end
+    end
+  end
+
   context "#destroy" do
     it "marks deleted_at column" do
       Timecop.freeze(Time.now) do
@@ -37,14 +195,14 @@ describe RailsSoftDeletable do
     end
 
     it "soft deletes the record" do
-      Timecop.freeze(Time.now) do
+      Timecop.freeze(Time.now.round) do
         decimal_model.destroy
         integer_model.destroy
 
         expect(decimal_model.deleted_at).to eq(("%0.6f" % Time.now.to_f).to_f)
         expect(integer_model.deleted_at).to eq(Time.now.to_i)
 
-        expect(decimal_model.soft_delete_time).to eq(Time.now)
+        expect(decimal_model.soft_delete_time).to eq(Time.now.in_time_zone)
         expect(integer_model.soft_delete_time.to_i).to eq(Time.now.to_i)
       end
     end
@@ -136,14 +294,14 @@ describe RailsSoftDeletable do
     end
 
     it "soft deletes the record" do
-      Timecop.freeze(Time.now) do
+      Timecop.freeze(Time.now.round) do
         decimal_model.delete
         integer_model.delete
 
         expect(decimal_model.deleted_at).to eq(("%0.6f" % Time.now.to_f).to_f)
         expect(integer_model.deleted_at.to_i).to eq(Time.now.to_i)
 
-        expect(decimal_model.soft_delete_time).to eq(Time.now)
+        expect(decimal_model.soft_delete_time).to eq(Time.now.in_time_zone)
         expect(integer_model.soft_delete_time.to_i).to eq(Time.now.to_i)
       end
     end
