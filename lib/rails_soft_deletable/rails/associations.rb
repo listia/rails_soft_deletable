@@ -6,7 +6,7 @@ module RailsSoftDeletable
 
     included do
       def target_scope
-        return if options[:polymorphic] && klass.nil?
+        return klass.scoped if options[:polymorphic] && klass.nil?
 
         if options[:with_deleted] && klass.soft_deletable?
           klass.with_deleted
