@@ -5,15 +5,17 @@ module RailsSoftDeletable
     extend ActiveSupport::Concern
 
     included do
-      def target_scope
-        return klass.scoped if options[:polymorphic] && klass.nil?
+      alias_method_chain :target_scope, :deleted
+    end
 
-        if options[:with_deleted] && klass.soft_deletable?
-          klass.with_deleted
-        else
-          klass.scoped
-        end
+    def target_scope_with_deleted
+      scope = target_scope_without_deleted
+
+      if scope && options[:with_deleted] && klass.soft_deletable?
+        scope = scope.with_deleted
       end
+
+      scope
     end
   end
 end
