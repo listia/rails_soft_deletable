@@ -10,7 +10,7 @@ module RailsSoftDeletable
       end
 
       def with_deleted
-        scoped.tap { |x| x.default_scoped = false }
+        all.tap { |x| x.default_scoped = false }
       end
 
       def only_deleted
