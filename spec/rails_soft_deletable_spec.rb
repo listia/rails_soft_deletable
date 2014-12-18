@@ -81,7 +81,7 @@ describe RailsSoftDeletable do
       context ".has_one" do
         context "with deleted option" do
           before do
-            Forest.has_one(:tree, conditions: ["biggest = ?", true], with_deleted: true)
+            Forest.has_one(:tree, -> { where(biggest: true) }, with_deleted: true)
             @tree = Tree.create!(forest_id: forest.id, biggest: true)
             @tree.destroy
           end
@@ -93,7 +93,7 @@ describe RailsSoftDeletable do
 
         context "without deleted option" do
           before do
-            Forest.has_one(:tree, conditions: ["biggest = ?", true])
+            Forest.has_one(:tree, -> { where(biggest: true) })
             Tree.create!(forest_id: forest.id, biggest: true).destroy
           end
 
@@ -162,7 +162,7 @@ describe RailsSoftDeletable do
       context ".has_one" do
         context "with deleted option" do
           before do
-            Park.has_one(:tree, conditions: ["biggest = ?", true], with_deleted: true)
+            Park.has_one(:tree, -> { where(biggest: true) }, with_deleted: true)
             @tree = Tree.create!(park_id: park.id, biggest: true)
             @tree.destroy
           end
@@ -174,7 +174,7 @@ describe RailsSoftDeletable do
 
         context "without deleted option" do
           before do
-            Park.has_one(:tree, conditions: ["biggest = ?", true])
+            Park.has_one(:tree, -> { where(biggest: true) })
             Tree.create!(park_id: park.id, biggest: true).destroy
           end
 

@@ -8,9 +8,13 @@ module RailsSoftDeletable
       ActiveSupport.on_load(:active_record) do
         include(RailsSoftDeletable::ActiveRecord)
         ::ActiveRecord::Associations::Association.send(:include, RailsSoftDeletable::Associations)
-        ::ActiveRecord::Associations::Builder::BelongsTo.valid_options << :with_deleted
-        ::ActiveRecord::Associations::Builder::HasMany.valid_options << :with_deleted
-        ::ActiveRecord::Associations::Builder::HasOne.valid_options << :with_deleted
+        if ::ActiveRecord::VERSION::STRING >= "4.0"
+          ::ActiveRecord::Associations::Builder::Association.valid_options << :with_deleted
+        else
+          ::ActiveRecord::Associations::Builder::BelongsTo.valid_options << :with_deleted
+          ::ActiveRecord::Associations::Builder::HasMany.valid_options << :with_deleted
+          ::ActiveRecord::Associations::Builder::HasOne.valid_options << :with_deleted
+        end
       end
     end
   end

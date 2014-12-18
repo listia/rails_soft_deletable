@@ -59,7 +59,7 @@ module RailsSoftDeletable
         #   update_column(soft_deletable_column, 0)
 
         name = soft_deletable_column.to_s
-        updated_count = self.class.unscoped.update_all({ name => 0 }, self.class.primary_key => id)
+        updated_count = self.class.unscoped.where(self.class.primary_key => id).update_all(name => 0 )
         raw_write_attribute(name, 0)
 
         updated_count == 1

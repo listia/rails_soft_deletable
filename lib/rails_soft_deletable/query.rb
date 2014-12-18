@@ -10,7 +10,11 @@ module RailsSoftDeletable
       end
 
       def with_deleted
-        scoped.tap { |x| x.default_scoped = false }
+        if ::ActiveRecord::VERSION::STRING >= "4.0"
+          all.tap { |x| x.default_scoped = false }
+        else
+          scoped.tap { |x| x.default_scoped = false }
+        end
       end
 
       def only_deleted
