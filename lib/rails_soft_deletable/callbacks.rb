@@ -34,11 +34,7 @@ module RailsSoftDeletable
       if destroy_mode == :hard
         super()
       else
-        if destroyed?
-          delete_or_soft_delete(true)
-        else
-          run_callbacks(:destroy) { delete_or_soft_delete(true) }
-        end
+        touch_soft_deletable_column(true)
       end
     end
 
@@ -46,8 +42,7 @@ module RailsSoftDeletable
       if delete_mode == :hard
         super()
       else
-        return if new_record?
-        delete_or_soft_delete
+        touch_soft_deletable_column
       end
     end
 
@@ -72,31 +67,16 @@ module RailsSoftDeletable
       !value || value != 0
     end
 
-    def persisted?
-      @_pretend_persistence || super
-    end
-
     private
-
-    def _prepare_for_hard_delete(&block)
-      @_pretend_persistence = true
-      self.class.unscoped(&block)
-    ensure
-      @_pretend_persistence = false
-    end
-
-    def delete_or_soft_delete(with_transaction = false)
-      if destroyed?
-        _prepare_for_hard_delete { delete(:hard) }
-      else
-        touch_soft_deletable_column(with_transaction)
-      end
-    end
 
     def touch_soft_deletable_column(with_transaction=false)
       if with_transaction
-        with_transaction_returning_status { touch_column }
-      else
+        with_transaction_returning_status do
+          run_callbacks(:destroy) do
+            touch_column if persisted?
+          end
+        end
+      elsif persisted?
         touch_column
       end
     end
