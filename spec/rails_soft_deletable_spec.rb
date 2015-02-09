@@ -240,9 +240,16 @@ describe RailsSoftDeletable do
     it "performs destroy callbacks" do
       model.destroy
 
-      expect(model.before_destroy_called).to eq(true)
-      expect(model.around_destroy_called).to eq(true)
-      expect(model.after_destroy_called).to eq(true)
+      expect(model.before_destroy_called).to eq(1)
+      expect(model.around_destroy_called).to eq(2)
+      expect(model.after_destroy_called).to eq(3)
+    end
+
+    it "performs commit callbacks" do
+      model.destroy
+
+      expect(model.after_commit_called).to eq(4)
+      expect(model.after_commit_called).to be > model.after_destroy_called
     end
 
     context "when record has already been soft deleted" do
@@ -251,19 +258,12 @@ describe RailsSoftDeletable do
         model.reset_callback_flags!
       end
 
-      it "does not perform destroy callbacks" do
+      it "continues to call destroy callbacks" do
         model.destroy
 
-        expect(model.before_destroy_called).to be_nil
-        expect(model.around_destroy_called).to be_nil
-        expect(model.after_destroy_called).to be_nil
-      end
-
-      it "hard deletes the record from the database" do
-        model.destroy
-
-        count = model.class.connection.select_value("SELECT COUNT(*) FROM #{model.class.quoted_table_name} WHERE #{model.class.primary_key} = #{model.id}")
-        expect(count).to eq(0)
+        expect(model.before_destroy_called).to eq(1)
+        expect(model.around_destroy_called).to eq(2)
+        expect(model.after_destroy_called).to eq(3)
       end
     end
 
@@ -278,9 +278,9 @@ describe RailsSoftDeletable do
       it "performs destroy callbacks" do
         model.destroy(:hard)
 
-        expect(model.before_destroy_called).to eq(true)
-        expect(model.around_destroy_called).to eq(true)
-        expect(model.after_destroy_called).to eq(true)
+        expect(model.before_destroy_called).to eq(1)
+        expect(model.around_destroy_called).to eq(2)
+        expect(model.after_destroy_called).to eq(3)
       end
     end
   end
@@ -356,13 +356,6 @@ describe RailsSoftDeletable do
         expect(model.around_destroy_called).to be_nil
         expect(model.after_destroy_called).to be_nil
       end
-
-      it "hard deletes the record from the database" do
-        model.delete
-
-        count = model.class.connection.select_value("SELECT COUNT(*) FROM #{model.class.quoted_table_name} WHERE #{model.class.primary_key} = #{model.id}")
-        expect(count).to eq(0)
-      end
     end
 
     context "with hard delete mode" do
@@ -410,9 +403,9 @@ describe RailsSoftDeletable do
     it "performs restore callbacks" do
       model.restore!
 
-      expect(model.before_restore_called).to eq(true)
-      expect(model.around_restore_called).to eq(true)
-      expect(model.after_restore_called).to eq(true)
+      expect(model.before_restore_called).to eq(1)
+      expect(model.around_restore_called).to eq(2)
+      expect(model.after_restore_called).to eq(3)
     end
 
     it "returns true" do
