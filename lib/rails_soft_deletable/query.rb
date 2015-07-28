@@ -10,7 +10,9 @@ module RailsSoftDeletable
       end
 
       def with_deleted
-        if ::ActiveRecord::VERSION::STRING >= "4.0"
+        if ::ActiveRecord::VERSION::STRING >= "4.1"
+          self.unscope(where: soft_deletable_column).all
+        elsif ::ActiveRecord::VERSION::STRING >= "4.0"
           all.tap { |x| x.default_scoped = false }
         else
           scoped.tap { |x| x.default_scoped = false }

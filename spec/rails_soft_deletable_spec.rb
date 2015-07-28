@@ -1,8 +1,8 @@
-require "spec_helper"
+require "rails_helper"
 
 describe RailsSoftDeletable do
   let (:model) { IntegerModel.create! }
-  let (:decimal_model) { DecimalModel.create! }
+  let (:decimal_model) { DecimalModel.create!(integer_model_id: model.id) }
   let (:integer_model) { IntegerModel.create! }
   let (:forest) { Forest.create! }
   let (:park) { Park.create! }
@@ -12,6 +12,42 @@ describe RailsSoftDeletable do
       model.destroy
 
       expect(IntegerModel.with_deleted).to include(model, integer_model)
+    end
+
+    context "when using with_deleted with associations" do
+      let! (:decimal_model2) { DecimalModel.create!(integer_model_id: integer_model.id) }
+
+      it "returns both non deleted and soft deleted object that realated to association" do
+        decimal_model.destroy
+
+        expect(model.decimal_models.with_deleted.to_a).to eq([decimal_model])
+      end
+
+      it "only affects the associations or model it touch" do
+        decimal_model.destroy
+
+        expect(IntegerModel.with_deleted.joins(:decimal_models).pluck(:id)).to eq([integer_model.id])
+      end
+
+      context "when access with_deleted associations with joins" do
+        it "returns both non deleted and soft deleted object that realated to association" do
+          # `unscoped` not being respected for Rails >= 4.0 when joining table, this issue remains unsolved.
+          # For example:
+          #   In IntegerModel:
+          #     has_many :decimal_models_with_deleted, -> { unscope where: :deleted_at }, class_name: "DecimalModel"
+          #
+          #   IntegerModel.with_deleted.joins(:decimal_models_with_deleted).to_sql
+          #   => "SELECT \"integer_models\".* FROM \"integer_models\" INNER JOIN \"decimal_models\" ON \"decimal_models\".\"integer_model_id\" = \"integer_models\".\"id\" AND \"decimal_models\".\"deleted_at\" = 0"
+          #
+          # Related issue: https://github.com/rails/rails/issues/13775
+          # Related PR: https://github.com/rails/rails/pull/18109
+          #
+          # The only solution is to using raw sql join to remove the default scope
+          expect(IntegerModel.with_deleted.
+                 joins("join decimal_models on decimal_models.integer_model_id = integer_models.id").pluck(:id)).
+                 to eq([integer_model.id])
+        end
+      end
     end
   end
 

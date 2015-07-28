@@ -23,7 +23,7 @@ module RailsSoftDeletable
         class_attribute :soft_deletable_column
 
         self.soft_deletable_column = options[:column] || :deleted_at
-        default_scope { where(self.quoted_table_name + ".#{soft_deletable_column} = 0") }
+        default_scope { where(soft_deletable_column => 0) }
       end
 
       def soft_deletable?
