@@ -7,16 +7,16 @@ module RailsSoftDeletable
     included do
       define_callbacks :restore
 
-      define_singleton_method("before_restore") do |*args, &block|
-        set_callback(:restore, :before, *args, &block)
+      define_singleton_method("before_restore") do |*args, block|
+        set_callback(:restore, :before, *args, block)
       end
 
-      define_singleton_method("around_restore") do |*args, &block|
-        set_callback(:restore, :around, *args, &block)
+      define_singleton_method("around_restore") do |*args, block|
+        set_callback(:restore, :around, *args, block)
       end
 
-      define_singleton_method("after_restore") do |*args, &block|
-        set_callback(:restore, :after, *args, &block)
+      define_singleton_method("after_restore") do |*args, block|
+        set_callback(:restore, :after, *args, block)
       end
     end
 
@@ -54,7 +54,7 @@ module RailsSoftDeletable
         #   update_column(soft_deletable_column, 0)
 
         name = soft_deletable_column.to_s
-        updated_count = self.class.unscoped.where(self.class.primary_key => id).update_all(name => 0 )
+        updated_count = self.class.unscoped.where(self.class.primary_key => id).update_all(name => 0)
         raw_write_attribute(name, 0)
 
         updated_count == 1
