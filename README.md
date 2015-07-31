@@ -1,5 +1,7 @@
 # RailsSoftDeletable
 
+[![Build Status](https://travis-ci.org/listia/rails_soft_deletable.svg?branch=master)](https://travis-ci.org/listia/rails_soft_deletable)
+
 For changes/updates/history, please refer to [Github Releases](https://github.com/listia/rails_soft_deletable/releases).
 
 This gem provides soft delete behavior to ActiveRecord 3.2.
