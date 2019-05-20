@@ -1,4 +1,4 @@
 source "https://rubygems.org"
 
-ruby "2.0.0", patchlevel: "645"
+ruby "2.4.6"
 gemspec
