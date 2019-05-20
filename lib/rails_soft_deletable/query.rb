@@ -11,7 +11,7 @@ module RailsSoftDeletable
 
       def with_deleted
         if ::ActiveRecord::VERSION::STRING >= "4.1"
-          self.unscope(where: soft_deletable_column).all
+          unscope(where: soft_deletable_column).all
         elsif ::ActiveRecord::VERSION::STRING >= "4.0"
           all.tap { |x| x.default_scoped = false }
         else
@@ -20,9 +20,9 @@ module RailsSoftDeletable
       end
 
       def only_deleted
-        with_deleted.where("#{self.table_name}.#{soft_deletable_column} > 0")
+        with_deleted.where("#{table_name}.#{soft_deletable_column} > 0")
       end
-      alias :deleted :only_deleted
+      alias deleted only_deleted
 
       def restore(id)
         if id.is_a?(Array)

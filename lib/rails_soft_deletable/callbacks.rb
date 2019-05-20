@@ -1,4 +1,6 @@
-require "active_support/concern"
+# frozen_string_literal: true
+
+require 'active_support/concern'
 
 module RailsSoftDeletable
   module Callbacks
@@ -60,7 +62,7 @@ module RailsSoftDeletable
         updated_count == 1
       end
     end
-    alias :restore :restore!
+    alias restore restore!
 
     def destroyed?
       value = send(soft_deletable_column)
@@ -69,7 +71,7 @@ module RailsSoftDeletable
 
     private
 
-    def touch_soft_deletable_column(with_transaction=false)
+    def touch_soft_deletable_column(with_transaction = false)
       if with_transaction
         with_transaction_returning_status do
           run_callbacks(:destroy) do

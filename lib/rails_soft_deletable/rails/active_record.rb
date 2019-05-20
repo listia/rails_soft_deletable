@@ -16,7 +16,7 @@ module RailsSoftDeletable
     end
 
     module ClassMethods
-      def soft_deletable(options={})
+      def soft_deletable(options = {})
         include RailsSoftDeletable::Query
         include RailsSoftDeletable::Callbacks
 
